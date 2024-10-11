@@ -1,0 +1,76 @@
+import calendar
+from datetime import date, timedelta
+
+# Classe para representar feriados
+class Holiday:
+    def __init__(self, name, holiday_date):
+        self.name = name
+        self.holiday_date = holiday_date
+        self.calendar = None  # Associação com Calendar (inicialmente nenhuma)
+
+    def set_calendar(self, calendar):
+        self.calendar = calendar  # Associando o feriado ao calendário
+
+    def get_name(self):
+        return self.name
+
+    def get_date(self):
+        return self.holiday_date
+
+    def is_holiday(self, check_date):
+        return self.holiday_date == check_date
+
+# Classe para o calendário anual com associação bilateral
+class Calendar:
+    def __init__(self, year):
+        self.year = year
+        self.holidays = []  # Lista de feriados
+
+    # Adicionar feriado e associar ao calendário
+    def add_holiday(self, holiday):
+        self.holidays.append(holiday)
+        holiday.set_calendar(self)  # Associa o feriado ao calendário
+
+    # Exibir o calendário de um determinado mês
+    def display_month(self, month):
+        print(calendar.month(self.year, month))
+
+    # Verificar se uma data é feriado
+    def check_holiday(self, check_date):
+        for holiday in self.holidays:
+            if holiday.is_holiday(check_date):
+                return f"{check_date} é um feriado: {holiday.get_name()}"
+        return f"{check_date} não é um feriado."
+
+    # Calcular a diferença de dias entre duas datas
+    @staticmethod
+    def calculate_days_between(start_date, end_date):
+        difference = end_date - start_date
+        return difference.days
+
+# Testando a associação bilateral entre Calendar e Holiday
+if __name__ == "__main__":
+    # Criando o calendário para 2024
+    my_calendar = Calendar(2024)
+
+    # Definindo alguns feriados
+    new_year = Holiday("Ano Novo", date(2024, 1, 1))
+    independence_day = Holiday("Dia da Independência", date(2024, 9, 7))
+    christmas = Holiday("Natal", date(2024, 12, 25))
+
+    # Associando os feriados ao calendário
+    my_calendar.add_holiday(new_year)
+    my_calendar.add_holiday(independence_day)
+    my_calendar.add_holiday(christmas)
+
+    # Exibindo o calendário de Janeiro de 2024
+    my_calendar.display_month(1)
+
+    # Verificando se uma data é feriado
+    print(my_calendar.check_holiday(date(2024, 1, 1)))  # Ano Novo
+    print(my_calendar.check_holiday(date(2024, 2, 14)))  # Não é feriado
+
+    # Calculando a diferença de dias entre duas datas
+    start = date(2024, 1, 1)
+    end = date(2024, 12, 25)
+    print(f"A diferença de dias entre {start} e {end} é de {my_calendar.calculate_days_between(start, end)} dias.")

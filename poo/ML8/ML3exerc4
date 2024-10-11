@@ -1,0 +1,122 @@
+from abc import ABC, abstractmethod
+
+# Interface para gerenciamento de conta
+class AccountInterface(ABC):
+    @abstractmethod
+    def debit(self, amount):
+        pass
+
+    @abstractmethod
+    def get_balance(self):
+        pass
+
+    @abstractmethod
+    def display_account(self):
+        pass
+
+
+# Classe base para Account com possibilidade de extensão
+class Account(AccountInterface):
+    def __init__(self, name, balance):
+        self.name = name
+        if balance >= 0:
+            self.balance = balance
+        else:
+            raise ValueError("O saldo inicial não pode ser negativo.")
+    
+    def debit(self, amount):
+        if amount > self.balance:
+            print("Quantia de débito excedeu o saldo da conta.")
+        else:
+            self.balance -= amount
+            print(f"R${amount} debitados com sucesso.")
+    
+    def get_balance(self):
+        return self.balance
+    
+    def display_account(self):
+        print(f"Nome: {self.name}, Saldo: R${self.balance}")
+
+
+# Classe para Account Premium que pode ter funcionalidades extras (extensão)
+class PremiumAccount(Account):
+    def __init__(self, name, balance, premium_discount):
+        super().__init__(name, balance)
+        self.premium_discount = premium_discount
+
+    def apply_discount(self, amount):
+        discount_amount = amount * (self.premium_discount / 100)
+        print(f"Desconto premium aplicado: R${discount_amount:.2f}")
+        return amount - discount_amount
+
+    def debit(self, amount):
+        amount_after_discount = self.apply_discount(amount)
+        super().debit(amount_after_discount)
+
+
+# Interface para banco, permitindo extensões de funcionalidades
+class BankInterface(ABC):
+    @abstractmethod
+    def add_account(self, account):
+        pass
+
+    @abstractmethod
+    def display_all_accounts(self):
+        pass
+
+
+# Classe base para Bank com injeção de dependência
+class Bank(BankInterface):
+    def __init__(self, name, account_manager):
+        self.name = name
+        self.account_manager = account_manager  # Dependência injetada
+    
+    def add_account(self, account):
+        self.account_manager.add_account(account)
+        print(f"Conta de {account.name} adicionada ao banco {self.name}.")
+    
+    def display_all_accounts(self):
+        print(f"Contas no banco {self.name}:")
+        self.account_manager.display_all_accounts()
+
+
+# Gerenciador de contas para gerenciar as contas bancárias (injeção de dependência)
+class AccountManager:
+    def __init__(self):
+        self.accounts = []
+
+    def add_account(self, account):
+        self.accounts.append(account)
+
+    def display_all_accounts(self):
+        for account in self.accounts:
+            account.display_account()
+
+
+# Testando a Injeção de Dependência nas Classes
+if __name__ == "__main__":
+
+    # Criando um gerenciador de contas
+    account_manager = AccountManager()
+
+    # Criando instâncias de Account e PremiumAccount
+    account1 = Account("Rafael Rodrigues", 1000)
+    account2 = PremiumAccount("Maria Silva", 1500, 10)
+
+    # Criando uma instância de Bank com injeção de dependência do AccountManager
+    bank = Bank("Banco Central", account_manager)
+
+    # Associando as contas ao banco através do gerenciador de contas
+    bank.add_account(account1)
+    bank.add_account(account2)
+
+    # Exibindo todas as contas associadas ao banco
+    bank.display_all_accounts()
+
+    # Testando operações em uma conta comum
+    account1.debit(200)
+    account1.display_account()
+
+    # Testando operações em uma conta premium com desconto
+    account2.debit(200)
+    account2.display_account()

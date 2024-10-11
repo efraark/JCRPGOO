@@ -1,0 +1,47 @@
+import random
+
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.guess = None
+
+    def make_guess(self, guess):
+        self.guess = guess
+
+class GuessingGame:
+    def __init__(self, player, lower_bound=1, upper_bound=100):
+        self.player = player
+        self.number_to_guess = random.randint(lower_bound, upper_bound)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.attempts = 0
+
+    def make_attempt(self, guess):
+        self.player.make_guess(guess)
+        self.attempts += 1
+        
+        if self.player.guess < self.number_to_guess:
+            return f"Palpite menor que o número gerado."
+        elif self.player.guess > self.number_to_guess:
+            return f"Palpite maior que o número gerado."
+        else:
+            return f"Parabéns {self.player.name}! Você adivinhou o número {self.number_to_guess} em {self.attempts} tentativas."
+
+    def reset_game(self):
+        self.number_to_guess = random.randint(self.lower_bound, self.upper_bound)
+        self.attempts = 0
+
+
+# Testando a Associação entre Player e GuessingGame
+if __name__ == "__main__":
+    # Criando um jogador
+    player = Player("Rafael")
+
+    # Criando uma instância de GuessingGame com o jogador
+    game = GuessingGame(player)
+
+    # Simulando palpites
+    print(game.make_attempt(50))  # Exemplo de tentativa
+    print(game.make_attempt(75))  # Exemplo de tentativa
+    print(game.make_attempt(85))  # Exemplo de tentativa
+    print(game.make_attempt(90))  # Exemplo de tentativa
