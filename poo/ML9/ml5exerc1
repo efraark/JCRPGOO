@@ -1,0 +1,134 @@
+from abc import ABC, abstractmethod
+
+# Interface para produtos
+class ProductInterface(ABC):
+    @abstractmethod
+    def get_name(self):
+        pass
+
+    @abstractmethod
+    def get_price(self):
+        pass
+
+# Classe para representar produtos
+class Product(ProductInterface):
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+    
+    def get_name(self):
+        return self.name
+    
+    def get_price(self):
+        return self.price
+
+# Interface para carrinho de compras
+class ShoppingCartInterface(ABC):
+    @abstractmethod
+    def add_product(self, product, quantity):
+        pass
+
+    @abstractmethod
+    def apply_discount(self, discount):
+        pass
+
+    @abstractmethod
+    def calculate_total(self):
+        pass
+
+    @abstractmethod
+    def display_cart(self):
+        pass
+
+    @abstractmethod
+    def set_store(self, store):
+        pass
+
+# Classe para carrinho de compras com associação bilateral
+class ShoppingCart(ShoppingCartInterface):
+    def __init__(self):
+        self.items = []
+        self.discount = 0
+        self.store = None  # Associação com VirtualStore (inicialmente nenhuma)
+
+    def set_store(self, store):
+        self.store = store  # Associando o carrinho à loja
+
+    def add_product(self, product, quantity=1):
+        self.items.append({"product": product, "quantity": quantity})
+        print(f"{quantity}x {product.get_name()} adicionado(s) ao carrinho da loja {self.store.name}.")
+
+    def apply_discount(self, discount):
+        self.discount = discount
+        print(f"Desconto de {discount}% aplicado ao carrinho da loja {self.store.name}.")
+
+    def calculate_total(self):
+        total = sum(item["product"].get_price() * item["quantity"] for item in self.items)
+        total_with_discount = total * (1 - self.discount / 100)
+        return total_with_discount
+
+    def display_cart(self):
+        print(f"Carrinho da loja {self.store.name}:")
+        for item in self.items:
+            product = item["product"]
+            quantity = item["quantity"]
+            print(f"{quantity}x {product.get_name()} - R${product.get_price():.2f} cada")
+        print(f"Desconto aplicado: {self.discount}%")
+
+# Classe VirtualStore com associação bilateral
+class VirtualStore:
+    def __init__(self, name, shopping_cart: ShoppingCartInterface):
+        self.name = name
+        self.products = []
+        self.shopping_cart = shopping_cart  # Dependência injetada
+        self.shopping_cart.set_store(self)  # Associando a loja ao carrinho
+
+    def add_product_to_store(self, product: ProductInterface):
+        self.products.append(product)
+        print(f"Produto {product.get_name()} cadastrado na loja {self.name}.")
+
+    def display_products(self):
+        print(f"Produtos disponíveis na {self.name}:")
+        for product in self.products:
+            print(f"Produto: {product.get_name()}, Preço: R${product.get_price():.2f}")
+
+    def add_product_to_cart(self, product: ProductInterface, quantity=1):
+        self.shopping_cart.add_product(product, quantity)
+
+    def apply_discount_to_cart(self, discount):
+        self.shopping_cart.apply_discount(discount)
+
+    def calculate_total_purchase(self):
+        total = self.shopping_cart.calculate_total()
+        print(f"Valor total da compra com desconto: R${total:.2f}")
+        return total
+
+# Testando a associação bilateral entre VirtualStore e ShoppingCart
+if __name__ == "__main__":
+    # Criando uma instância de ShoppingCart (associação bilateral)
+    cart = ShoppingCart()
+
+    # Criando a loja virtual com o carrinho de compras associado
+    store = VirtualStore("Loja Virtual Rafael", cart)
+
+    # Cadastrando produtos na loja
+    product1 = Product("Notebook", 3000)
+    product2 = Product("Smartphone", 1500)
+    store.add_product_to_store(product1)
+    store.add_product_to_store(product2)
+
+    # Exibindo os produtos da loja
+    store.display_products()
+
+    # Adicionando produtos ao carrinho de compras
+    store.add_product_to_cart(product1, 2)
+    store.add_product_to_cart(product2, 1)
+
+    # Aplicando desconto ao carrinho
+    store.apply_discount_to_cart(10)
+
+    # Exibindo o carrinho
+    store.shopping_cart.display_cart()
+
+    # Calculando o valor total da compra
+    store.calculate_total_purchase()
