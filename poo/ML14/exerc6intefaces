@@ -1,0 +1,58 @@
+from abc import ABC, abstractmethod
+
+# Classe abstrata Student
+class Student(ABC):
+    def __init__(self, name: str, age: int, student_id: int):
+        self.name = name
+        self.age = age
+        self.student_id = student_id
+
+    @abstractmethod
+    def get_student_type(self) -> str:
+        pass
+
+    def __str__(self):
+        return f"{self.get_student_type()} - Nome: {self.name}, Idade: {self.age}, ID: {self.student_id}"
+
+# Interface para Pesquisa
+class Researcher(ABC):
+    @abstractmethod
+    def conduct_research(self):
+        pass
+
+# Interface para Monitoria
+class TeachingAssistant(ABC):
+    @abstractmethod
+    def assist_teaching(self):
+        pass
+
+# Classe UndergraduateStudent (Graduação) que implementa ambas as interfaces
+class UndergraduateStudent(Student, Researcher, TeachingAssistant):
+    def get_student_type(self) -> str:
+        return "Graduação"
+    
+    def conduct_research(self):
+        return f"{self.name} está conduzindo uma pesquisa."
+
+    def assist_teaching(self):
+        return f"{self.name} está auxiliando nas aulas."
+
+# Classe MasterStudent (Mestrado) que implementa apenas a interface de Pesquisa
+class MasterStudent(Student, Researcher):
+    def get_student_type(self) -> str:
+        return "Mestrado"
+    
+    def conduct_research(self):
+        return f"{self.name} está conduzindo uma pesquisa."
+
+# Exemplo de uso do sistema de Gestão Acadêmica com Interfaces
+if __name__ == "__main__":
+    student1 = UndergraduateStudent(name="Alice", age=20, student_id=1)
+    student2 = MasterStudent(name="Bruno", age=28, student_id=2)
+
+    print(student1)
+    print(student1.conduct_research())
+    print(student1.assist_teaching())
+
+    print(student2)
+    print(student2.conduct_research())
